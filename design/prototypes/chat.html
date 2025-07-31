@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>硬帮帮 - 聊天</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .ios-status-bar {
+            height: 44px;
+            background: #fff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            color: #000;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .chat-header {
+            background: linear-gradient(135deg, #ff6b35, #f7931e);
+        }
+        .message-bubble {
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+        .message-sent {
+            background: linear-gradient(135deg, #ff6b35, #f7931e);
+            color: white;
+            border-radius: 18px 18px 4px 18px;
+        }
+        .message-received {
+            background: #f3f4f6;
+            color: #374151;
+            border-radius: 18px 18px 18px 4px;
+        }
+        .typing-indicator {
+            animation: pulse 1.5s infinite;
+        }
+        .voice-recording {
+            animation: pulse 1s infinite;
+        }
+        .message-time {
+            font-size: 11px;
+            opacity: 0.7;
+        }
+        .input-area {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+        }
+        .quick-reply {
+            transition: all 0.3s ease;
+        }
+        .quick-reply:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .task-card {
+            background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+            border: 1px solid #0ea5e9;
+        }
+        .location-share {
+            background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+            border: 1px solid #10b981;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <!-- iOS状态栏 -->
+    <div class="ios-status-bar">
+        <span>9:41</span>
+        <div class="flex items-center space-x-1">
+            <i class="fas fa-signal text-sm"></i>
+            <i class="fas fa-wifi text-sm"></i>
+            <i class="fas fa-battery-three-quarters text-sm"></i>
+        </div>
+    </div>
+
+    <!-- 聊天头部 -->
+    <div class="chat-header text-white px-4 py-3">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <button class="p-2 -ml-2">
+                    <i class="fas fa-arrow-left text-white"></i>
+                </button>
+                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face" 
+                     alt="用户头像" 
+                     class="w-10 h-10 rounded-full border-2 border-white">
+                <div>
+                    <h2 class="font-semibold">小明</h2>
+                    <p class="text-sm opacity-90">2分钟前在线</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-2">
+                <button class="p-2">
+                    <i class="fas fa-phone text-white"></i>
+                </button>
+                <button class="p-2">
+                    <i class="fas fa-ellipsis-v text-white"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- 任务信息卡片 -->
+        <div class="task-card rounded-xl p-3 mt-3">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-shopping-bag text-white"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-gray-900">帮忙买杯咖啡</h3>
+                        <p class="text-sm text-gray-600">¥5 · 剩余25分钟</p>
+                    </div>
+                </div>
+                <button class="bg-blue-500 text-white px-3 py-1 rounded-full text-sm">
+                    查看详情
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 聊天消息区域 -->
+    <div class="flex-1 px-4 py-4 space-y-4 pb-32 max-h-screen overflow-y-auto" id="chatMessages">
+        <!-- 系统消息 -->
+        <div class="text-center">
+            <div class="inline-block bg-white rounded-full px-4 py-2 text-sm text-gray-600 shadow-sm">
+                <i class="fas fa-shield-alt text-green-500 mr-2"></i>
+                双方已通过实名认证，请放心交易
+            </div>
+        </div>
+
+        <!-- 时间分隔 -->
+        <div class="text-center">
+            <span class="text-xs text-gray-500">今天 14:32</span>
+        </div>
+
+        <!-- 接收的消息 -->
+        <div class="flex items-start space-x-2">
+            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=32&h=32&fit=crop&crop=face" 
+                 alt="用户头像" 
+                 class="w-8 h-8 rounded-full">
+            <div class="flex flex-col space-y-1">
+                <div class="message-bubble message-received px-4 py-2">
+                    <p>你好！我需要一杯星巴克美式咖啡</p>
+                </div>
+                <span class="message-time text-gray-500 ml-2">14:32</span>
+            </div>
+        </div>
+
+        <!-- 发送的消息 -->
+        <div class="flex items-end justify-end space-x-2">
+            <div class="flex flex-col items-end space-y-1">
+                <div class="message-bubble message-sent px-4 py-2">
+                    <p>好的，我现在就去买！</p>
+                </div>
+                <div class="flex items-center space-x-1">
+                    <span class="message-time text-gray-500">14:33</span>
+                    <i class="fas fa-check-double text-blue-500 text-xs"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- 接收的消息 -->
+        <div class="flex items-start space-x-2">
+            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=32&h=32&fit=crop&crop=face" 
+                 alt="用户头像" 
+                 class="w-8 h-8 rounded-full">
+            <div class="flex flex-col space-y-1">
+                <div class="message-bubble message-received px-4 py-2">
+                    <p>大杯，无糖，谢谢！</p>
+                </div>
+                <span class="message-time text-gray-500 ml-2">14:33</span>
+            </div>
+        </div>
+
+        <!-- 位置分享消息 -->
+        <div class="flex items-end justify-end space-x-2">
+            <div class="flex flex-col items-end space-y-1">
+                <div class="location-share rounded-xl p-3 max-w-xs">
+                    <div class="flex items-center space-x-2 mb-2">
+                        <i class="fas fa-map-marker-alt text-green-500"></i>
+                        <span class="font-medium text-gray-900">我的位置</span>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-2">中关村软件园星巴克</p>
+                    <div class="bg-green-100 h-20 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-map text-green-500 text-2xl"></i>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-1">
+                    <span class="message-time text-gray-500">14:35</span>
+                    <i class="fas fa-check-double text-blue-500 text-xs"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- 图片消息 -->
+        <div class="flex items-end justify-end space-x-2">
+            <div class="flex flex-col items-end space-y-1">
+                <div class="message-bubble">
+                    <img src="https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=200&h=150&fit=crop" 
+                         alt="咖啡图片" 
+                         class="rounded-xl max-w-xs">
+                </div>
+                <div class="message-bubble message-sent px-4 py-2 mt-1">
+                    <p>已经买好了！</p>
+                </div>
+                <div class="flex items-center space-x-1">
+                    <span class="message-time text-gray-500">14:38</span>
+                    <i class="fas fa-check-double text-blue-500 text-xs"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- 接收的消息 -->
+        <div class="flex items-start space-x-2">
+            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=32&h=32&fit=crop&crop=face" 
+                 alt="用户头像" 
+                 class="w-8 h-8 rounded-full">
+            <div class="flex flex-col space-y-1">
+                <div class="message-bubble message-received px-4 py-2">
+                    <p>太好了！我在2号楼3层等你</p>
+                </div>
+                <span class="message-time text-gray-500 ml-2">14:39</span>
+            </div>
+        </div>
+
+        <!-- 语音消息 -->
+        <div class="flex items-end justify-end space-x-2">
+            <div class="flex flex-col items-end space-y-1">
+                <div class="message-bubble message-sent px-4 py-3 flex items-center space-x-3">
+                    <button class="voice-play">
+                        <i class="fas fa-play text-white"></i>
+                    </button>
+                    <div class="flex items-center space-x-1">
+                        <div class="w-1 h-3 bg-white rounded-full"></div>
+                        <div class="w-1 h-5 bg-white rounded-full"></div>
+                        <div class="w-1 h-2 bg-white rounded-full"></div>
+                        <div class="w-1 h-4 bg-white rounded-full"></div>
+                        <div class="w-1 h-3 bg-white rounded-full"></div>
+                    </div>
+                    <span class="text-white text-sm">3"</span>
+                </div>
+                <div class="flex items-center space-x-1">
+                    <span class="message-time text-gray-500">14:40</span>
+                    <i class="fas fa-check-double text-blue-500 text-xs"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- 正在输入指示器 -->
+        <div class="flex items-start space-x-2 typing-indicator" id="typingIndicator" style="display: none;">
+            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=32&h=32&fit=crop&crop=face" 
+                 alt="用户头像" 
+                 class="w-8 h-8 rounded-full">
+            <div class="message-bubble message-received px-4 py-3">
+                <div class="flex space-x-1">
+                    <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                    <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.1s"></div>
+                    <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 快捷回复 -->
+    <div class="px-4 py-2" id="quickReplies">
+        <div class="flex space-x-2 overflow-x-auto">
+            <button class="quick-reply bg-white border border-gray-200 rounded-full px-4 py-2 text-sm whitespace-nowrap">
+                好的
+            </button>
+            <button class="quick-reply bg-white border border-gray-200 rounded-full px-4 py-2 text-sm whitespace-nowrap">
+                马上到
+            </button>
+            <button class="quick-reply bg-white border border-gray-200 rounded-full px-4 py-2 text-sm whitespace-nowrap">
+                稍等一下
+            </button>
+            <button class="quick-reply bg-white border border-gray-200 rounded-full px-4 py-2 text-sm whitespace-nowrap">
+                谢谢
+            </button>
+        </div>
+    </div>
+
+    <!-- 输入区域 -->
+    <div class="fixed bottom-0 left-0 right-0 input-area border-t border-gray-200 p-4">
+        <div class="flex items-end space-x-3">
+            <!-- 语音按钮 -->
+            <button class="voice-btn p-3 bg-gray-100 rounded-full" id="voiceBtn">
+                <i class="fas fa-microphone text-gray-600"></i>
+            </button>
+            
+            <!-- 输入框 -->
+            <div class="flex-1 relative">
+                <textarea 
+                    id="messageInput"
+                    class="w-full px-4 py-3 border border-gray-200 rounded-2xl resize-none focus:outline-none focus:border-orange-500 max-h-24" 
+                    rows="1" 
+                    placeholder="输入消息..."
+                    style="min-height: 44px;"></textarea>
+                <button class="absolute right-2 top-1/2 transform -translate-y-1/2 p-2" id="emojiBtn">
+                    <i class="fas fa-smile text-gray-400"></i>
+                </button>
+            </div>
+            
+            <!-- 更多功能按钮 -->
+            <button class="p-3 bg-gray-100 rounded-full" id="moreBtn">
+                <i class="fas fa-plus text-gray-600"></i>
+            </button>
+            
+            <!-- 发送按钮 -->
+            <button class="send-btn p-3 bg-orange-500 rounded-full" id="sendBtn">
+                <i class="fas fa-paper-plane text-white"></i>
+            </button>
+        </div>
+        
+        <!-- iOS底部指示器 -->
+        <div class="flex justify-center pt-2">
+            <div class="w-32 h-1 bg-black bg-opacity-30 rounded-full"></div>
+        </div>
+    </div>
+
+    <!-- 更多功能面板 -->
+    <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 transform translate-y-full transition-transform" id="morePanel">
+        <div class="grid grid-cols-4 gap-4 mb-4">
+            <button class="flex flex-col items-center p-3" id="photoBtn">
+                <div class="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center mb-2">
+                    <i class="fas fa-camera text-white text-xl"></i>
+                </div>
+                <span class="text-xs text-gray-600">拍照</span>
+            </button>
+            <button class="flex flex-col items-center p-3" id="albumBtn">
+                <div class="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center mb-2">
+                    <i class="fas fa-images text-white text-xl"></i>
+                </div>
+                <span class="text-xs text-gray-600">相册</span>
+            </button>
+            <button class="flex flex-col items-center p-3" id="locationBtn">
+                <div class="w-12 h-12 bg-red-500 rounded-xl flex items-center justify-center mb-2">
+                    <i class="fas fa-map-marker-alt text-white text-xl"></i>
+                </div>
+                <span class="text-xs text-gray-600">位置</span>
+            </button>
+            <button class="flex flex-col items-center p-3" id="fileBtn">
+                <div class="w-12 h-12 bg-purple-500 rounded-xl flex items-center justify-center mb-2">
+                    <i class="fas fa-file text-white text-xl"></i>
+                </div>
+                <span class="text-xs text-gray-600">文件</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- 表情面板 -->
+    <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 transform translate-y-full transition-transform" id="emojiPanel">
+        <div class="grid grid-cols-8 gap-2 mb-4">
+            <button class="emoji-btn text-2xl p-2 hover:bg-gray-100 rounded">😀</button>
+            <button class="emoji-btn text-2xl p-2 hover:bg-gray-100 rounded">😂</button>
+            <button class="emoji-btn text-2xl p-2 hover:bg-gray-100 rounded">😍</button>
+            <button class="emoji-btn text-2xl p-2 hover:bg-gray-100 rounded">🤔</button>
+            <button class="emoji-btn text-2xl p-2 hover:bg-gray-100 rounded">😊</button>
+            <button class="emoji-btn text-2xl p-2 hover:bg-gray-100 rounded">👍</button>
+            <button class="emoji-btn text-2xl p-2 hover:bg-gray-100 rounded">👌</button>
+            <button class="emoji-btn text-2xl p-2 hover:bg-gray-100 rounded">❤️</button>
+            <button class="emoji-btn text-2xl p-2 hover:bg-gray-100 rounded">😭</button>
+            <button class="emoji-btn text-2xl p-2 hover:bg-gray-100 rounded">😅</button>
+            <button class="emoji-btn text-2xl p-2 hover:bg-gray-100 rounded">🙏</button>
+            <button class="emoji-btn text-2xl p-2 hover:bg-gray-100 rounded">💪</button>
+            <button class="emoji-btn text-2xl p-2 hover:bg-gray-100 rounded">🎉</button>
+            <button class="emoji-btn text-2xl p-2 hover:bg-gray-100 rounded">🔥</button>
+            <button class="emoji-btn text-2xl p-2 hover:bg-gray-100 rounded">⭐</button>
+            <button class="emoji-btn text-2xl p-2 hover:bg-gray-100 rounded">✨</button>
+        </div>
+    </div>
+
+    <script>
+        const messageInput = document.getElementById('messageInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const voiceBtn = document.getElementById('voiceBtn');
+        const moreBtn = document.getElementById('moreBtn');
+        const emojiBtn = document.getElementById('emojiBtn');
+        const morePanel = document.getElementById('morePanel');
+        const emojiPanel = document.getElementById('emojiPanel');
+        const chatMessages = document.getElementById('chatMessages');
+        const typingIndicator = document.getElementById('typingIndicator');
+        const quickReplies = document.getElementById('quickReplies');
+
+        let isRecording = false;
+        let morePanelOpen = false;
+        let emojiPanelOpen = false;
+
+        // 发送消息
+        function sendMessage(text) {
+            if (!text.trim()) return;
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'flex items-end justify-end space-x-2';
+            messageDiv.innerHTML = `
+                <div class="flex flex-col items-end space-y-1">
+                    <div class="message-bubble message-sent px-4 py-2">
+                        <p>${text}</p>
+                    </div>
+                    <div class="flex items-center space-x-1">
+                        <span class="message-time text-gray-500">${new Date().toLocaleTimeString('zh-CN', {hour: '2-digit', minute: '2-digit'})}</span>
+                        <i class="fas fa-check text-gray-400 text-xs"></i>
+                    </div>
+                </div>
+            `;
+            
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            
+            // 模拟已读状态
+            setTimeout(() => {
+                const checkIcon = messageDiv.querySelector('.fa-check');
+                checkIcon.classList.remove('fa-check');
+                checkIcon.classList.add('fa-check-double', 'text-blue-500');
+            }, 1000);
+            
+            // 模拟对方正在输入
+            setTimeout(() => {
+                showTypingIndicator();
+                setTimeout(() => {
+                    hideTypingIndicator();
+                    receiveMessage('收到！');
+                }, 2000);
+            }, 500);
+        }
+
+        // 接收消息
+        function receiveMessage(text) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'flex items-start space-x-2';
+            messageDiv.innerHTML = `
+                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=32&h=32&fit=crop&crop=face" 
+                     alt="用户头像" 
+                     class="w-8 h-8 rounded-full">
+                <div class="flex flex-col space-y-1">
+                    <div class="message-bubble message-received px-4 py-2">
+                        <p>${text}</p>
+                    </div>
+                    <span class="message-time text-gray-500 ml-2">${new Date().toLocaleTimeString('zh-CN', {hour: '2-digit', minute: '2-digit'})}</span>
+                </div>
+            `;
+            
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // 显示正在输入指示器
+        function showTypingIndicator() {
+            typingIndicator.style.display = 'flex';
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // 隐藏正在输入指示器
+        function hideTypingIndicator() {
+            typingIndicator.style.display = 'none';
+        }
+
+        // 发送按钮点击
+        sendBtn.addEventListener('click', () => {
+            const text = messageInput.value.trim();
+            if (text) {
+                sendMessage(text);
+                messageInput.value = '';
+                messageInput.style.height = '44px';
+            }
+        });
+
+        // 输入框回车发送
+        messageInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendBtn.click();
+            }
+        });
+
+        // 输入框自动调整高度
+        messageInput.addEventListener('input', () => {
+            messageInput.style.height = '44px';
+            messageInput.style.height = Math.min(messageInput.scrollHeight, 96) + 'px';
+        });
+
+        // 语音录制
+        voiceBtn.addEventListener('click', () => {
+            if (!isRecording) {
+                isRecording = true;
+                voiceBtn.classList.add('voice-recording', 'bg-red-500');
+                voiceBtn.innerHTML = '<i class="fas fa-stop text-white"></i>';
+                
+                setTimeout(() => {
+                    isRecording = false;
+                    voiceBtn.classList.remove('voice-recording', 'bg-red-500');
+                    voiceBtn.classList.add('bg-gray-100');
+                    voiceBtn.innerHTML = '<i class="fas fa-microphone text-gray-600"></i>';
+                    
+                    // 发送语音消息
+                    const voiceDiv = document.createElement('div');
+                    voiceDiv.className = 'flex items-end justify-end space-x-2';
+                    voiceDiv.innerHTML = `
+                        <div class="flex flex-col items-end space-y-1">
+                            <div class="message-bubble message-sent px-4 py-3 flex items-center space-x-3">
+                                <button class="voice-play">
+                                    <i class="fas fa-play text-white"></i>
+                                </button>
+                                <div class="flex items-center space-x-1">
+                                    <div class="w-1 h-3 bg-white rounded-full"></div>
+                                    <div class="w-1 h-5 bg-white rounded-full"></div>
+                                    <div class="w-1 h-2 bg-white rounded-full"></div>
+                                    <div class="w-1 h-4 bg-white rounded-full"></div>
+                                </div>
+                                <span class="text-white text-sm">2"</span>
+                            </div>
+                            <div class="flex items-center space-x-1">
+                                <span class="message-time text-gray-500">${new Date().toLocaleTimeString('zh-CN', {hour: '2-digit', minute: '2-digit'})}</span>
+                                <i class="fas fa-check text-gray-400 text-xs"></i>
+                            </div>
+                        </div>
+                    `;
+                    
+                    chatMessages.appendChild(voiceDiv);
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                }, 2000);
+            }
+        });
+
+        // 更多功能面板
+        moreBtn.addEventListener('click', () => {
+            if (emojiPanelOpen) {
+                emojiPanel.style.transform = 'translateY(100%)';
+                emojiPanelOpen = false;
+            }
+            
+            if (!morePanelOpen) {
+                morePanel.style.transform = 'translateY(0)';
+                morePanelOpen = true;
+            } else {
+                morePanel.style.transform = 'translateY(100%)';
+                morePanelOpen = false;
+            }
+        });
+
+        // 表情面板
+        emojiBtn.addEventListener('click', () => {
+            if (morePanelOpen) {
+                morePanel.style.transform = 'translateY(100%)';
+                morePanelOpen = false;
+            }
+            
+            if (!emojiPanelOpen) {
+                emojiPanel.style.transform = 'translateY(0)';
+                emojiPanelOpen = true;
+            } else {
+                emojiPanel.style.transform = 'translateY(100%)';
+                emojiPanelOpen = false;
+            }
+        });
+
+        // 表情选择
+        document.querySelectorAll('.emoji-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                messageInput.value += btn.textContent;
+                messageInput.focus();
+            });
+        });
+
+        // 快捷回复
+        document.querySelectorAll('.quick-reply').forEach(btn => {
+            btn.addEventListener('click', () => {
+                sendMessage(btn.textContent);
+                quickReplies.style.display = 'none';
+            });
+        });
+
+        // 位置分享
+        document.getElementById('locationBtn').addEventListener('click', () => {
+            const locationDiv = document.createElement('div');
+            locationDiv.className = 'flex items-end justify-end space-x-2';
+            locationDiv.innerHTML = `
+                <div class="flex flex-col items-end space-y-1">
+                    <div class="location-share rounded-xl p-3 max-w-xs">
+                        <div class="flex items-center space-x-2 mb-2">
+                            <i class="fas fa-map-marker-alt text-green-500"></i>
+                            <span class="font-medium text-gray-900">我的位置</span>
+                        </div>
+                        <p class="text-sm text-gray-600 mb-2">中关村软件园2号楼</p>
+                        <div class="bg-green-100 h-20 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-map text-green-500 text-2xl"></i>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-1">
+                        <span class="message-time text-gray-500">${new Date().toLocaleTimeString('zh-CN', {hour: '2-digit', minute: '2-digit'})}</span>
+                        <i class="fas fa-check text-gray-400 text-xs"></i>
+                    </div>
+                </div>
+            `;
+            
+            chatMessages.appendChild(locationDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            
+            morePanel.style.transform = 'translateY(100%)';
+            morePanelOpen = false;
+        });
+
+        // 拍照功能
+        document.getElementById('photoBtn').addEventListener('click', () => {
+            const imageDiv = document.createElement('div');
+            imageDiv.className = 'flex items-end justify-end space-x-2';
+            imageDiv.innerHTML = `
+                <div class="flex flex-col items-end space-y-1">
+                    <div class="message-bubble">
+                        <img src="https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=200&h=150&fit=crop" 
+                             alt="拍照" 
+                             class="rounded-xl max-w-xs">
+                    </div>
+                    <div class="flex items-center space-x-1">
+                        <span class="message-time text-gray-500">${new Date().toLocaleTimeString('zh-CN', {hour: '2-digit', minute: '2-digit'})}</span>
+                        <i class="fas fa-check text-gray-400 text-xs"></i>
+                    </div>
+                </div>
+            `;
+            
+            chatMessages.appendChild(imageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            
+            morePanel.style.transform = 'translateY(100%)';
+            morePanelOpen = false;
+        });
+
+        // 语音播放
+        document.addEventListener('click', (e) => {
+            if (e.target.closest('.voice-play')) {
+                const playBtn = e.target.closest('.voice-play');
+                const icon = playBtn.querySelector('i');
+                
+                if (icon.classList.contains('fa-play')) {
+                    icon.classList.remove('fa-play');
+                    icon.classList.add('fa-pause');
+                    
+                    setTimeout(() => {
+                        icon.classList.remove('fa-pause');
+                        icon.classList.add('fa-play');
+                    }, 3000);
+                }
+            }
+        });
+
+        // 点击其他区域关闭面板
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('#moreBtn') && !e.target.closest('#morePanel')) {
+                if (morePanelOpen) {
+                    morePanel.style.transform = 'translateY(100%)';
+                    morePanelOpen = false;
+                }
+            }
+            
+            if (!e.target.closest('#emojiBtn') && !e.target.closest('#emojiPanel')) {
+                if (emojiPanelOpen) {
+                    emojiPanel.style.transform = 'translateY(100%)';
+                    emojiPanelOpen = false;
+                }
+            }
+        });
+
+        // 自动滚动到底部
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+
+        // 模拟在线状态更新
+        setInterval(() => {
+            const onlineStatus = document.querySelector('.chat-header p');
+            const statuses = ['刚刚在线', '1分钟前在线', '2分钟前在线', '正在输入...'];
+            const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];
+            onlineStatus.textContent = randomStatus;
+        }, 30000);
+    </script>
+</body>
+</html>

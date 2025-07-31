@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>硬帮帮 - 启动页面</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .ios-status-bar {
+            height: 44px;
+            background: linear-gradient(135deg, #ff6b35, #f7931e);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .logo-animation {
+            animation: logoFloat 3s ease-in-out infinite;
+        }
+        @keyframes logoFloat {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #ff6b35, #f7931e, #ffab00);
+        }
+        .feature-card {
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen">
+    <!-- iOS状态栏 -->
+    <div class="ios-status-bar">
+        <span>9:41</span>
+        <div class="flex items-center space-x-1">
+            <i class="fas fa-signal text-sm"></i>
+            <i class="fas fa-wifi text-sm"></i>
+            <i class="fas fa-battery-three-quarters text-sm"></i>
+        </div>
+    </div>
+
+    <!-- 启动页面内容 -->
+    <div class="flex flex-col items-center justify-center min-h-screen text-white px-6 -mt-11">
+        <!-- Logo区域 -->
+        <div class="logo-animation mb-8">
+            <div class="w-32 h-32 bg-white rounded-3xl flex items-center justify-center shadow-2xl">
+                <div class="text-6xl text-orange-500">
+                    <i class="fas fa-hands-helping"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- 品牌名称 -->
+        <h1 class="text-4xl font-bold mb-4 text-center">硬帮帮</h1>
+        <p class="text-xl opacity-90 text-center mb-12">超本地即时互助平台</p>
+
+        <!-- 核心特性展示 -->
+        <div class="space-y-4 w-full max-w-sm mb-12">
+            <div class="feature-card rounded-2xl p-4 flex items-center">
+                <div class="w-12 h-12 bg-white bg-opacity-20 rounded-xl flex items-center justify-center mr-4">
+                    <i class="fas fa-clock text-xl"></i>
+                </div>
+                <div>
+                    <h3 class="font-semibold">5分钟快速完成</h3>
+                    <p class="text-sm opacity-80">轻量级互助任务</p>
+                </div>
+            </div>
+
+            <div class="feature-card rounded-2xl p-4 flex items-center">
+                <div class="w-12 h-12 bg-white bg-opacity-20 rounded-xl flex items-center justify-center mr-4">
+                    <i class="fas fa-map-marker-alt text-xl"></i>
+                </div>
+                <div>
+                    <h3 class="font-semibold">超近距离服务</h3>
+                    <p class="text-sm opacity-80">精确到楼栋定位</p>
+                </div>
+            </div>
+
+            <div class="feature-card rounded-2xl p-4 flex items-center">
+                <div class="w-12 h-12 bg-white bg-opacity-20 rounded-xl flex items-center justify-center mr-4">
+                    <i class="fas fa-coins text-xl"></i>
+                </div>
+                <div>
+                    <h3 class="font-semibold">小额便民服务</h3>
+                    <p class="text-sm opacity-80">1-20元微支付</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 开始使用按钮 -->
+        <button class="w-full max-w-sm bg-white text-orange-500 font-bold py-4 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+            开始使用
+        </button>
+
+        <!-- 底部提示 -->
+        <p class="text-sm opacity-70 mt-6 text-center">
+            让邻里互助变得简单便捷
+        </p>
+    </div>
+
+    <!-- iOS底部指示器 -->
+    <div class="fixed bottom-2 left-1/2 transform -translate-x-1/2">
+        <div class="w-32 h-1 bg-white bg-opacity-30 rounded-full"></div>
+    </div>
+
+    <script>
+        // 简单的页面交互
+        document.querySelector('button').addEventListener('click', function() {
+            this.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>正在启动...';
+            setTimeout(() => {
+                this.innerHTML = '开始使用';
+            }, 2000);
+        });
+    </script>
+</body>
+</html>
